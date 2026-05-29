@@ -1,8 +1,8 @@
-# 🏔️ Complaint Mountain — The Board Game
+# 🏔️ Complaint Mountain — The Electronic Board Game
 
 > *A fine place to be unhappy — together.*
 
-A charming, fully self-contained **pass-and-play board game**. Margaret and the perpetually-dissatisfied residents of Complaint Village race up Complaint Mountain — rolling dice, drawing Complaint Cards, surviving the dreaded Roundabout, and lodging as many complaints as possible along the way.
+A charming, fully self-contained **pass-and-play electronic board game**. Margaret and the perpetually-dissatisfied residents of Complaint Village race up Complaint Mountain — rolling dice, drawing Complaint Cards, surviving the dreaded Roundabout, and lodging as many complaints as possible along the way.
 
 First to the summit wins. The biggest complainer is crowned **Chief Complainer of the Mountain**.
 
@@ -10,7 +10,8 @@ First to the summit wins. The biggest complainer is crowned **Chief Complainer o
 
 ## ▶️ Play
 
-- **Online:** https://libcsys.github.io/complaint-mountain/
+- **Live demo:** **https://complaintmountain.com** (the full Complaint Mountain world; game at [/game](https://complaintmountain.com/game))
+- **Static mirror:** https://libcsys.github.io/complaint-mountain/
 - **Local:** clone this repo and open `index.html` in any modern browser. That's it.
 
 ## 🎲 How to play
