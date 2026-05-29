@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>Complaint Mountain — The Board Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#f6efe4;--ink-soft:rgba(246,239,228,.64);--ink-faint:rgba(246,239,228,.4);
+  --gold:#e9c27e;--gold-2:#f3d9a6;--rose:#c97b6e;--panel:rgba(20,12,30,.5);
+  --serif:'Fraunces',Georgia,serif;--sans:'Inter',system-ui,sans-serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);color:var(--ink);min-height:100vh;min-height:100dvh;overflow-x:hidden;
+  background:radial-gradient(900px 520px at 80% -10%,rgba(233,194,126,.16),transparent 60%),
+    linear-gradient(180deg,#150f26 0%,#221634 34%,#3a2350 62%,#7a3f5e 84%,#c9805e 100%);
+  background-attachment:fixed;padding-bottom:env(safe-area-inset-bottom);}
+a{color:inherit}
+.topbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;
+  padding:env(safe-area-inset-top) 20px 0;min-height:54px;background:rgba(15,10,25,.6);
+  backdrop-filter:blur(12px);border-bottom:1px solid rgba(246,239,228,.1)}
+.tb-brand{display:flex;align-items:center;gap:9px;font-family:var(--serif);font-weight:600;font-size:1rem}
+.tb-brand svg{width:22px;height:22px}
+.tb-brand a{text-decoration:none}
+.tb-link{font-size:.74rem;font-weight:600;color:var(--ink-soft);text-decoration:none;padding:8px 14px;
+  border:1px solid rgba(246,239,228,.18);border-radius:999px;transition:all .18s}
+.tb-link:hover{color:var(--ink);border-color:rgba(233,194,126,.45);background:rgba(233,194,126,.08)}
+
+/* ── SETUP ── */
+#setup{max-width:760px;margin:0 auto;padding:34px 20px 60px;text-align:center}
+.eyebrow{font-size:.72rem;font-weight:700;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:14px}
+.setup-title{font-family:var(--serif);font-weight:900;line-height:1;letter-spacing:-.02em;
+  font-size:clamp(2.1rem,8vw,3.6rem);
+  background:linear-gradient(180deg,#fff,var(--gold-2) 60%,var(--gold));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 6px 26px rgba(233,194,126,.2))}
+.setup-sub{font-family:var(--serif);font-style:italic;color:var(--ink-soft);font-size:clamp(1rem,3vw,1.3rem);margin:14px 0 30px}
+.who{font-size:.7rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:14px}
+.char-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:30px}
+.char{position:relative;background:var(--panel);border:1.5px solid rgba(246,239,228,.12);border-radius:18px;
+  padding:20px 12px;cursor:pointer;transition:all .18s;backdrop-filter:blur(8px)}
+.char:hover{border-color:rgba(246,239,228,.3);transform:translateY(-2px)}
+.char.on{border-color:var(--c);box-shadow:0 0 0 1px var(--c),0 14px 34px rgba(0,0,0,.34),0 0 30px color-mix(in srgb,var(--c) 40%,transparent)}
+.char-tok{width:52px;height:52px;border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;
+  font-size:1.5rem;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.4),transparent 60%),var(--c);
+  box-shadow:inset 0 -3px 8px rgba(0,0,0,.3),0 6px 16px rgba(0,0,0,.35)}
+.char-name{font-family:var(--serif);font-weight:600;font-size:1rem}
+.char-role{font-size:.66rem;color:var(--ink-faint);margin-top:2px}
+.char-tick{position:absolute;top:10px;right:10px;width:20px;height:20px;border-radius:50%;border:1.5px solid rgba(246,239,228,.25);
+  display:flex;align-items:center;justify-content:center;font-size:.7rem;color:#150f26;opacity:0;transition:all .15s}
+.char.on .char-tick{opacity:1;background:var(--c);border-color:var(--c)}
+.btn{display:inline-flex;align-items:center;gap:10px;font-family:var(--sans);font-weight:800;font-size:1rem;
+  letter-spacing:.02em;padding:15px 34px;border-radius:999px;border:none;cursor:pointer;transition:all .2s;text-decoration:none}
+.btn-primary{color:#2a1a10;background:linear-gradient(180deg,var(--gold-2),var(--gold));box-shadow:0 10px 34px rgba(233,194,126,.34)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 16px 46px rgba(233,194,126,.46)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-ghost{background:rgba(246,239,228,.05);border:1px solid rgba(246,239,228,.22);color:var(--ink)}
+.btn-ghost:hover{border-color:rgba(233,194,126,.5)}
+
+/* ── GAME ── */
+#game{display:none;max-width:1180px;margin:0 auto;padding:18px 18px 50px;
+  display:none;grid-template-columns:1fr;gap:20px}
+#game.live{display:grid}
+@media(min-width:920px){#game.live{grid-template-columns:1.15fr .85fr;align-items:start}}
+.board-wrap{position:relative;background:var(--panel);border:1px solid rgba(246,239,228,.1);border-radius:22px;
+  overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.4)}
+.board-wrap svg{display:block;width:100%;height:auto}
+.tile{cursor:default}
+.tile-base{fill:rgba(20,12,30,.7);stroke:rgba(246,239,228,.2);stroke-width:1.2}
+.tile-complaint .tile-base{fill:rgba(201,123,110,.26);stroke:rgba(233,150,135,.6)}
+.tile-cafe .tile-base{fill:rgba(233,194,126,.24);stroke:rgba(243,217,166,.7)}
+.tile-round .tile-base{fill:rgba(167,139,250,.24);stroke:rgba(196,181,252,.7)}
+.tile-start .tile-base,.tile-summit .tile-base{fill:rgba(246,239,228,.92);stroke:#fff}
+.tile-ico{font-size:13px;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.tile-num{font-size:8px;fill:var(--ink-faint);text-anchor:middle;dominant-baseline:central;font-family:'Inter',sans-serif;font-weight:600}
+.zone-lbl{font-family:'Fraunces',serif;font-weight:600;fill:rgba(246,239,228,.5);font-size:13px;letter-spacing:.04em}
+.token-g{transition:transform .24s cubic-bezier(.34,1.4,.5,1)}
+.token-c{stroke:rgba(0,0,0,.35);stroke-width:1.5}
+.token-active{filter:drop-shadow(0 0 7px rgba(255,255,255,.6))}
+
+/* panel */
+.panel{display:flex;flex-direction:column;gap:16px}
+.card{background:var(--panel);border:1px solid rgba(246,239,228,.1);border-radius:18px;padding:18px;backdrop-filter:blur(8px)}
+.card-h{font-family:var(--serif);font-weight:600;font-size:.95rem;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.turn-banner{text-align:center}
+.turn-who{font-family:var(--serif);font-weight:900;font-size:1.5rem;display:flex;align-items:center;justify-content:center;gap:10px}
+.turn-dot{width:14px;height:14px;border-radius:50%;box-shadow:0 0 10px var(--c)}
+.dice-row{display:flex;align-items:center;justify-content:center;gap:18px;margin-top:14px}
+.die{width:62px;height:62px;border-radius:14px;background:linear-gradient(180deg,#fff,#f3ead8);color:#241634;
+  display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:900;font-size:2rem;
+  box-shadow:0 10px 26px rgba(0,0,0,.4),inset 0 -3px 0 rgba(0,0,0,.12)}
+.die.rolling{animation:roll .5s ease}
+@keyframes roll{0%{transform:rotate(0) scale(1)}50%{transform:rotate(200deg) scale(1.12)}100%{transform:rotate(360deg) scale(1)}}
+.scorerow{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:11px;transition:background .2s}
+.scorerow+.scorerow{margin-top:5px}
+.scorerow.cur{background:rgba(233,194,126,.1);box-shadow:inset 0 0 0 1px rgba(233,194,126,.25)}
+.sr-tok{width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.95rem;
+  background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.4),transparent 60%),var(--c);box-shadow:inset 0 -2px 5px rgba(0,0,0,.3)}
+.sr-name{font-weight:700;font-size:.85rem;flex:1}
+.sr-meta{font-size:.66rem;color:var(--ink-faint)}
+.sr-pts{font-family:var(--serif);font-weight:900;font-size:1.05rem;color:var(--gold-2)}
+.log{font-size:.78rem;line-height:1.5;color:var(--ink-soft);max-height:150px;overflow-y:auto;display:flex;flex-direction:column-reverse;gap:6px}
+.log div{padding-bottom:6px;border-bottom:1px solid rgba(246,239,228,.06)}
+.log b{color:var(--ink)}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:rgba(246,239,228,.15);border-radius:3px}
+
+/* modals */
+.modal{position:fixed;inset:0;z-index:90;display:none;align-items:center;justify-content:center;padding:22px;
+  background:rgba(8,5,16,.7);backdrop-filter:blur(6px)}
+.modal.open{display:flex;animation:fade .2s ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.cardpop{max-width:400px;width:100%;background:linear-gradient(180deg,rgba(40,26,55,.98),rgba(26,16,38,.98));
+  border:1px solid rgba(233,194,126,.4);border-radius:22px;padding:30px 26px;text-align:center;
+  box-shadow:0 30px 80px rgba(0,0,0,.6);animation:pop .28s cubic-bezier(.34,1.5,.5,1)}
+@keyframes pop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+.cardpop .cp-kind{font-size:.7rem;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);margin-bottom:12px}
+.cardpop .cp-ico{font-size:2.6rem;margin-bottom:14px}
+.cardpop .cp-text{font-family:var(--serif);font-size:1.15rem;line-height:1.45;color:var(--ink);margin-bottom:10px}
+.cardpop .cp-eff{font-size:.82rem;color:var(--gold-2);font-weight:600;margin-bottom:22px}
+.win-score{font-family:var(--serif);font-weight:900;font-size:3rem;background:linear-gradient(180deg,#fff,var(--gold));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tb-brand">
+    <a href="/" style="display:flex;align-items:center;gap:9px">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2 3 21h18L12 2z" fill="#e9c27e"/><path d="M12 7l-4.2 9h8.4L12 7z" fill="#150f26" opacity=".5"/></svg>
+      Complaint Mountain
+    </a>
+  </div>
+  <a class="tb-link" href="/">&larr; The Village</a>
+</div>
+
+<!-- ── SETUP ── -->
+<section id="setup">
+  <div class="eyebrow">The Board Game</div>
+  <h1 class="setup-title">Race up Complaint Mountain</h1>
+  <p class="setup-sub">Roll, grumble, and lodge complaints to the summit. Pass the device &mdash; first to the top wins.</p>
+  <div class="who">Choose your residents <span style="color:var(--ink-faint)">(2&ndash;6 players)</span></div>
+  <div class="char-grid" id="charGrid"></div>
+  <button class="btn btn-primary" id="startBtn" onclick="startGame()">Start the Climb &rarr;</button>
+</section>
+
+<!-- ── GAME ── -->
+<section id="game">
+  <div class="board-wrap" id="boardWrap"></div>
+  <div class="panel">
+    <div class="card turn-banner">
+      <div class="who" style="margin-bottom:8px">Now complaining</div>
+      <div class="turn-who" id="turnWho">&mdash;</div>
+      <div class="dice-row">
+        <div class="die" id="die">&#127922;</div>
+        <button class="btn btn-primary" id="rollBtn" onclick="doRoll()">Roll</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h">&#127942; Standings</div>
+      <div id="scores"></div>
+    </div>
+    <div class="card">
+      <div class="card-h">&#128220; Village Gossip</div>
+      <div class="log" id="log"></div>
+    </div>
+    <button class="btn btn-ghost" onclick="location.reload()" style="font-size:.82rem;padding:11px 20px;align-self:center">New Game</button>
+  </div>
+</section>
+
+<!-- ── CARD MODAL ── -->
+<div class="modal" id="cardModal">
+  <div class="cardpop">
+    <div class="cp-kind" id="cpKind">Complaint Card</div>
+    <div class="cp-ico" id="cpIco">&#128221;</div>
+    <div class="cp-text" id="cpText"></div>
+    <div class="cp-eff" id="cpEff"></div>
+    <button class="btn btn-primary" id="cpBtn" onclick="closeCard()">Lodge it</button>
+  </div>
+</div>
+
+<!-- ── WIN MODAL ── -->
+<div class="modal" id="winModal">
+  <div class="cardpop">
+    <div class="cp-kind">Summit reached</div>
+    <div class="cp-ico" id="winIco">&#127937;</div>
+    <div class="cp-text" id="winText"></div>
+    <div class="win-score" id="winScore"></div>
+    <div class="cp-eff" id="winSub" style="margin-top:6px">Chief Complainer of the Mountain</div>
+    <button class="btn btn-primary" onclick="location.reload()">Play Again</button>
+  </div>
+</div>
+
+<script>
+/* ── Residents ── */
+const CHARACTERS=[
+  {name:'Margaret',emoji:'👒',color:'#c084fc',role:'The Matriarch'},
+  {name:'Bryan',   emoji:'🚲',color:'#60a5fa',role:'The Cyclist'},
+  {name:'Edith',   emoji:'☕',color:'#fbbf24',role:'Cafe Regular'},
+  {name:'Nigel',   emoji:'📋',color:'#34d399',role:'The Secretary'},
+  {name:'Cynthia', emoji:'🐩',color:'#fb7185',role:'Dog Walker'},
+  {name:'Derek',   emoji:'🚗',color:'#fb923c',role:'The Driver'},
+];
+
+/* ── Board layout: 30 tiles ── */
+const NUM=30, LAST=29;
+const SPECIAL={0:'start',5:'complaint',8:'cafe',11:'complaint',14:'round',
+  17:'complaint',20:'cafe',23:'complaint',26:'round',29:'summit'};
+const ICONS={complaint:'📝',cafe:'☕',round:'🔄',start:'🏡',summit:'⛰️'};
+function tileType(i){return SPECIAL[i]||'normal';}
+
+/* ── Complaint Cards ── */
+const DECK=[
+  {t:"The café got your order wrong. Again.",e:{pts:2},ico:'☕'},
+  {t:"You penned a strongly-worded letter to the council.",e:{pts:3},ico:'✍️'},
+  {t:"Stuck behind a cyclist crawling up the hill.",e:{skip:1},ico:'🚲'},
+  {t:"You nabbed the perfect parking spot. Smug. Advance.",e:{mv:3},ico:'🅿️'},
+  {t:"Someone parked across your driveway. The nerve.",e:{mv:-2},ico:'🚒'},
+  {t:"The roundabout defeated you once more. Back to the Cafe.",e:{cafe:1},ico:'🔄'},
+  {t:"Bin day was moved without any notice whatsoever.",e:{pts:2},ico:'🗑️'},
+  {t:"You complained so eloquently the neighbours applauded. Roll again.",e:{again:1},ico:'👏'},
+  {t:"Margaret started a rumour about you. Swap with the leader.",e:{swap:1},ico:'👒'},
+  {t:"Slow Wi-Fi at the café — but you got a point out of it.",e:{pts:1,mv:1},ico:'📶'},
+  {t:"You queue-jumped at the bakery. Guilt walks you back.",e:{mv:-1},ico:'🥐'},
+  {t:"A gloriously sunny day. Nothing to complain about?! Faint.",e:{skip:1},ico:'☀️'},
+  {t:"You filed a noise complaint at 9:01pm sharp.",e:{pts:2,mv:2},ico:'🔊'},
+  {t:"The new speed bump is, frankly, an outrage.",e:{pts:3},ico:'🚧'},
+];
+let deck=[];
+function drawCard(){ if(!deck.length){deck=[...DECK].sort(()=>Math.random()-.5);} return deck.pop(); }
+
+/* ── State ── */
+let players=[], cur=0, busy=false, TILEPTS=[];
+
+/* ── Setup UI ── */
+const sel=new Set([0,1]);
+function renderChars(){
+  const g=document.getElementById('charGrid');
+  g.innerHTML=CHARACTERS.map((c,i)=>`
+    <div class="char ${sel.has(i)?'on':''}" style="--c:${c.color}" onclick="toggleChar(${i})">
+      <div class="char-tick">✓</div>
+      <div class="char-tok">${c.emoji}</div>
+      <div class="char-name">${c.name}</div>
+      <div class="char-role">${c.role}</div>
+    </div>`).join('');
+  document.getElementById('startBtn').disabled=sel.size<2;
+}
+function toggleChar(i){
+  if(sel.has(i)) sel.delete(i); else { if(sel.size>=6) return; sel.add(i); }
+  renderChars();
+}
+renderChars();
+
+/* ── Build board SVG ── */
+const ROAD="M300,712 C150,694 138,636 300,616 C470,596 472,538 300,518 C150,498 150,440 300,420 C462,400 472,344 300,324 C158,306 164,252 300,232 C432,214 398,150 300,118";
+function buildBoard(){
+  const W=600,H=760;
+  const svgNS="http://www.w3.org/2000/svg";
+  const svg=document.createElementNS(svgNS,"svg");
+  svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+  svg.innerHTML=`
+    <defs>
+      <linearGradient id="bm" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6a3f64"/><stop offset="1" stop-color="#2a1a3e"/></linearGradient>
+      <linearGradient id="bm2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a4f63"/><stop offset="1" stop-color="#4a2f5c"/></linearGradient>
+      <radialGradient id="bmoon" cx="50%" cy="45%" r="55%"><stop offset="0" stop-color="#fff6e2"/><stop offset="100%" stop-color="#e9c27e"/></radialGradient>
+      <filter id="bg"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    </defs>
+    <circle cx="492" cy="86" r="34" fill="url(#bmoon)" filter="url(#bg)"/>
+    <path d="M0 250 L120 200 L260 240 L420 175 L560 230 L600 205 L600 760 L0 760Z" fill="url(#bm)" opacity=".7"/>
+    <path d="M300 70 L560 760 L40 760 Z" fill="url(#bm2)"/>
+    <path d="M300 70 L268 150 q32 16 64 0 Z" fill="#f6efe4" opacity=".9"/>
+    <path d="${ROAD}" fill="none" stroke="rgba(233,194,126,.85)" stroke-width="26" stroke-linecap="round" opacity=".18"/>
+    <path id="roadPath" d="${ROAD}" fill="none" stroke="rgba(233,194,126,.55)" stroke-width="3" stroke-linecap="round" stroke-dasharray="1 11"/>
+    <text class="zone-lbl" x="350" y="700">Complaint Village</text>
+    <text class="zone-lbl" x="60" y="455">Cafe District</text>
+    <text class="zone-lbl" x="360" y="250">The Roundabout</text>
+    <text class="zone-lbl" x="318" y="100" style="fill:#fff;opacity:.85">Summit</text>
+    <g id="tiles"></g>
+    <g id="tokens"></g>`;
+  document.getElementById('boardWrap').appendChild(svg);
+
+  // compute evenly-spaced tile points along the road
+  const path=svg.querySelector('#roadPath');
+  const L=path.getTotalLength();
+  TILEPTS=[];
+  for(let i=0;i<NUM;i++){
+    const d=L*(0.985-(i/(NUM-1))*0.97); // start near bottom (i=0), summit at top
+    const p=path.getPointAtLength(d);
+    TILEPTS.push({x:p.x,y:p.y});
+  }
+  // render tiles
+  const tg=svg.querySelector('#tiles');
+  TILEPTS.forEach((p,i)=>{
+    const ty=tileType(i);
+    const big=(ty==='start'||ty==='summit');
+    const r=big?17:(ty==='normal'?11:14);
+    const g=document.createElementNS(svgNS,'g');
+    g.setAttribute('class','tile tile-'+ty);
+    g.innerHTML=`<circle class="tile-base" cx="${p.x}" cy="${p.y}" r="${r}"/>`+
+      (ty==='normal'?`<text class="tile-num" x="${p.x}" y="${p.y}">${i}</text>`
+        :`<text class="tile-ico" x="${p.x}" y="${p.y}">${ICONS[ty]}</text>`);
+    tg.appendChild(g);
+  });
+  renderTokens();
+}
+
+/* ── Tokens ── */
+function tokenXY(pos,slot,count){
+  const p=TILEPTS[pos];
+  if(count<=1) return {x:p.x,y:p.y};
+  const ang=(slot/count)*Math.PI*2 - Math.PI/2, r=10;
+  return {x:p.x+Math.cos(ang)*r, y:p.y+Math.sin(ang)*r};
+}
+function renderTokens(){
+  const tk=document.getElementById('tokens'); if(!tk) return;
+  tk.innerHTML='';
+  const byPos={};
+  players.forEach((pl,idx)=>{(byPos[pl.pos]=byPos[pl.pos]||[]).push(idx);});
+  players.forEach((pl,idx)=>{
+    const mates=byPos[pl.pos], slot=mates.indexOf(idx);
+    const {x,y}=tokenXY(pl.pos,slot,mates.length);
+    const c=CHARACTERS[pl.char];
+    const g=document.createElementNS("http://www.w3.org/2000/svg",'g');
+    g.setAttribute('class','token-g'+(idx===cur?' token-active':''));
+    g.setAttribute('transform',`translate(${x},${y})`);
+    g.innerHTML=`<circle class="token-c" r="12" fill="${c.color}"/>
+      <text x="0" y="0.5" text-anchor="middle" dominant-baseline="central" font-size="12">${c.emoji}</text>`;
+    tk.appendChild(g);
+  });
+}
+
+/* ── Game flow ── */
+function startGame(){
+  if(sel.size<2) return;
+  players=[...sel].map(i=>({char:i,pos:0,pts:0,skip:false}));
+  cur=0; busy=false; deck=[];
+  document.getElementById('setup').style.display='none';
+  document.getElementById('game').classList.add('live');
+  buildBoard();
+  log(`The residents gather at the village gate. <b>${CHARACTERS[players[0].char].name}</b> grumbles first.`);
+  updateTurn();
+}
+
+function updateTurn(){
+  const pl=players[cur], c=CHARACTERS[pl.char];
+  document.documentElement.style.setProperty('--c',c.color);
+  const tw=document.getElementById('turnWho');
+  tw.innerHTML=`<span class="turn-dot" style="--c:${c.color};background:${c.color}"></span>${c.emoji} ${c.name}`;
+  renderScores(); renderTokens();
+  document.getElementById('rollBtn').disabled=false;
+}
+
+function renderScores(){
+  const order=[...players].map((p,i)=>({p,i})).sort((a,b)=>b.p.pos-a.p.pos || b.p.pts-a.p.pts);
+  document.getElementById('scores').innerHTML=order.map(({p,i})=>{
+    const c=CHARACTERS[p.char];
+    const dist=LAST-p.pos;
+    return `<div class="scorerow ${i===cur?'cur':''}">
+      <div class="sr-tok" style="--c:${c.color}">${c.emoji}</div>
+      <div style="flex:1"><div class="sr-name">${c.name}</div>
+        <div class="sr-meta">${p.pos>=LAST?'at the summit':(dist+' tiles to go')}${p.skip?' &middot; skipping':''}</div></div>
+      <div class="sr-pts">${p.pts}<span style="font-size:.6rem;color:var(--ink-faint);font-family:var(--sans);font-weight:600"> pts</span></div>
+    </div>`;
+  }).join('');
+}
+
+function doRoll(){
+  if(busy) return; busy=true;
+  document.getElementById('rollBtn').disabled=true;
+  const pl=players[cur];
+  if(pl.skip){
+    pl.skip=false;
+    log(`<b>${CHARACTERS[pl.char].name}</b> is too busy complaining to move. Turn skipped.`);
+    return endTurn();
+  }
+  const die=document.getElementById('die');
+  die.classList.add('rolling');
+  const n=1+Math.floor(Math.random()*6);
+  let flick=0;
+  const iv=setInterval(()=>{die.textContent=1+Math.floor(Math.random()*6); if(++flick>6){clearInterval(iv);die.textContent=n;}},60);
+  setTimeout(()=>{die.classList.remove('rolling');
+    log(`<b>${CHARACTERS[pl.char].name}</b> rolls a ${n}.`);
+    movePlayer(cur,n,()=>resolveTile(cur));
+  },560);
+}
+
+function movePlayer(idx,steps,done){
+  const pl=players[idx];
+  let left=steps;
+  (function hop(){
+    if(left<=0||pl.pos>=LAST){renderTokens();return done();}
+    pl.pos=Math.min(pl.pos+1,LAST); left--;
+    renderTokens();
+    setTimeout(hop,240);
+  })();
+}
+
+function resolveTile(idx){
+  const pl=players[idx];
+  if(pl.pos>=LAST) return win(idx);
+  const ty=tileType(pl.pos);
+  if(ty==='complaint'){
+    const card=drawCard(); showCard(card,()=>applyEffect(idx,card.e,()=>afterTile(idx)));
+    return;
+  }
+  if(ty==='cafe'){
+    pl.pts+=1;
+    log(`<b>${CHARACTERS[pl.char].name}</b> stops at the Cafe for a moan and a flat white. <span style="color:var(--gold-2)">+1 pt</span>`);
+    return afterTile(idx);
+  }
+  if(ty==='round'){
+    const r=Math.random();
+    if(r<0.34){ pl.skip=true; log(`The Roundabout bewilders <b>${CHARACTERS[pl.char].name}</b> — dizzy, loses next turn.`); }
+    else if(r<0.67){ log(`<b>${CHARACTERS[pl.char].name}</b> cracks the Roundabout and shoots ahead 3!`); return movePlayer(idx,3,()=>afterTile(idx)); }
+    else { pl.pos=Math.max(0,pl.pos-2); log(`<b>${CHARACTERS[pl.char].name}</b> takes the wrong exit. Back 2.`); renderTokens(); }
+    return afterTile(idx);
+  }
+  afterTile(idx);
+}
+
+function afterTile(idx){
+  if(players[idx].pos>=LAST) return win(idx);
+  endTurn();
+}
+
+function applyEffect(idx,e,cb){
+  const pl=players[idx], nm=CHARACTERS[pl.char].name;
+  if(e.pts){pl.pts+=e.pts;}
+  if(e.swap){
+    let lead=0; players.forEach((p,i)=>{if(p.pos>players[lead].pos)lead=i;});
+    if(lead!==idx){const tmp=pl.pos;pl.pos=players[lead].pos;players[lead].pos=tmp;
+      log(`<b>${nm}</b> swaps places with <b>${CHARACTERS[players[lead].char].name}</b>!`);}
+  }
+  if(e.cafe){const cafes=Object.keys(SPECIAL).filter(k=>SPECIAL[k]==='cafe').map(Number).filter(k=>k<pl.pos);
+    if(cafes.length){pl.pos=cafes[cafes.length-1];}}
+  if(typeof e.mv==='number'){
+    if(e.mv>0){renderTokens();return movePlayer(idx,e.mv,()=>{if(pl.pos>=LAST)return win(idx);finishEffect(idx,e,cb);});}
+    else{pl.pos=Math.max(0,pl.pos+e.mv);}
+  }
+  finishEffect(idx,e,cb);
+}
+function finishEffect(idx,e,cb){
+  const pl=players[idx];
+  renderTokens(); renderScores();
+  if(pl.pos>=LAST) return win(idx);
+  if(e.skip) pl.skip=true;
+  if(e.again){ busy=false; document.getElementById('rollBtn').disabled=false;
+    log(`<b>${CHARACTERS[pl.char].name}</b> rolls again!`); return; }
+  cb();
+}
+
+function endTurn(){
+  renderScores();
+  cur=(cur+1)%players.length;
+  busy=false;
+  updateTurn();
+}
+
+/* ── Card modal ── */
+let cardCb=null;
+function effText(e){
+  const parts=[];
+  if(e.pts)parts.push(`+${e.pts} complaint pts`);
+  if(e.mv>0)parts.push(`advance ${e.mv}`);
+  if(e.mv<0)parts.push(`back ${-e.mv}`);
+  if(e.skip)parts.push('lose next turn');
+  if(e.again)parts.push('roll again');
+  if(e.swap)parts.push('swap with leader');
+  if(e.cafe)parts.push('back to the Cafe');
+  return parts.join(' &middot; ');
+}
+function showCard(card,cb){
+  cardCb=cb;
+  document.getElementById('cpIco').innerHTML=card.ico;
+  document.getElementById('cpText').textContent=card.t;
+  document.getElementById('cpEff').innerHTML=effText(card.e);
+  document.getElementById('cardModal').classList.add('open');
+}
+function closeCard(){
+  document.getElementById('cardModal').classList.remove('open');
+  const cb=cardCb; cardCb=null; if(cb)cb();
+}
+
+/* ── Win ── */
+function win(idx){
+  const pl=players[idx],c=CHARACTERS[pl.char];
+  let champ=players[0]; players.forEach(p=>{if(p.pts>champ.pts)champ=p;});
+  document.getElementById('winIco').innerHTML=c.emoji;
+  document.getElementById('winText').innerHTML=`<b>${c.name}</b> reaches the summit of Complaint Mountain!`;
+  document.getElementById('winScore').textContent=c.name+' wins';
+  document.getElementById('winSub').innerHTML=`Most complaints lodged: <b>${CHARACTERS[champ.char].name}</b> (${champ.pts} pts)`;
+  document.getElementById('winModal').classList.add('open');
+  log(`🏁 <b>${c.name}</b> wins the climb!`);
+}
+
+/* ── Log ── */
+function log(html){
+  const l=document.getElementById('log');
+  const d=document.createElement('div'); d.innerHTML=html; l.prepend(d);
+}
+</script>
+
+</body>
+</html>
