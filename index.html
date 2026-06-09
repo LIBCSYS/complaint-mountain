@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<meta name="version" content="1.0Delta">
 <title>Complaint Mountain — The Electronic Board Game</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -63,7 +64,7 @@ a{color:inherit}
 
 /* ── GAME ── */
 #game{display:none;max-width:1180px;margin:0 auto;padding:18px 18px 50px;
-  display:none;grid-template-columns:1fr;gap:20px}
+  grid-template-columns:1fr;gap:20px}
 #game.live{display:grid}
 @media(min-width:920px){#game.live{grid-template-columns:1.15fr .85fr;align-items:start}}
 .board-wrap{position:relative;background:var(--panel);border:1px solid rgba(246,239,228,.1);border-radius:22px;
@@ -123,6 +124,15 @@ a{color:inherit}
 .cardpop .cp-eff{font-size:.82rem;color:var(--gold-2);font-weight:600;margin-bottom:22px}
 .win-score{font-family:var(--serif);font-weight:900;font-size:3rem;background:linear-gradient(180deg,#fff,var(--gold));
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+
+/* a11y + footer */
+.char:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.btn:focus-visible{outline:2px solid var(--gold-2);outline-offset:3px}
+.site-footer{text-align:center;padding:8px 20px 34px;font-size:.68rem;letter-spacing:.08em;color:var(--ink-faint)}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  html{scroll-behavior:auto}
+}
 </style>
 </head>
 <body>
@@ -130,7 +140,7 @@ a{color:inherit}
 <div class="topbar">
   <div class="tb-brand">
     <a href="/" style="display:flex;align-items:center;gap:9px">
-      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2 3 21h18L12 2z" fill="#e9c27e"/><path d="M12 7l-4.2 9h8.4L12 7z" fill="#150f26" opacity=".5"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2 3 21h18L12 2z" fill="#e9c27e"/><path d="M12 7l-4.2 9h8.4L12 7z" fill="#150f26" opacity=".5"/></svg>
       Complaint Mountain
     </a>
   </div>
@@ -155,7 +165,7 @@ a{color:inherit}
       <div class="who" style="margin-bottom:8px">Now complaining</div>
       <div class="turn-who" id="turnWho">&mdash;</div>
       <div class="dice-row">
-        <div class="die" id="die">&#127922;</div>
+        <div class="die" id="die" aria-hidden="true">&#127922;</div>
         <button class="btn btn-primary" id="rollBtn" onclick="doRoll()">Roll</button>
       </div>
     </div>
@@ -165,14 +175,14 @@ a{color:inherit}
     </div>
     <div class="card">
       <div class="card-h">&#128220; Village Gossip</div>
-      <div class="log" id="log"></div>
+      <div class="log" id="log" aria-live="polite"></div>
     </div>
     <button class="btn btn-ghost" onclick="location.reload()" style="font-size:.82rem;padding:11px 20px;align-self:center">New Game</button>
   </div>
 </section>
 
 <!-- ── CARD MODAL ── -->
-<div class="modal" id="cardModal">
+<div class="modal" id="cardModal" role="dialog" aria-modal="true" aria-labelledby="cpText">
   <div class="cardpop">
     <div class="cp-kind" id="cpKind">Complaint Card</div>
     <div class="cp-ico" id="cpIco">&#128221;</div>
@@ -183,16 +193,18 @@ a{color:inherit}
 </div>
 
 <!-- ── WIN MODAL ── -->
-<div class="modal" id="winModal">
+<div class="modal" id="winModal" role="dialog" aria-modal="true" aria-labelledby="winText">
   <div class="cardpop">
     <div class="cp-kind">Summit reached</div>
     <div class="cp-ico" id="winIco">&#127937;</div>
     <div class="cp-text" id="winText"></div>
     <div class="win-score" id="winScore"></div>
     <div class="cp-eff" id="winSub" style="margin-top:6px">Chief Complainer of the Mountain</div>
-    <button class="btn btn-primary" onclick="location.reload()">Play Again</button>
+    <button class="btn btn-primary" id="winBtn" onclick="location.reload()">Play Again</button>
   </div>
 </div>
+
+<footer class="site-footer">Complaint Mountain &middot; v1.0Delta</footer>
 
 <script>
 /* ── Residents ── */
@@ -240,8 +252,10 @@ const sel=new Set([0,1]);
 function renderChars(){
   const g=document.getElementById('charGrid');
   g.innerHTML=CHARACTERS.map((c,i)=>`
-    <div class="char ${sel.has(i)?'on':''}" style="--c:${c.color}" onclick="toggleChar(${i})">
-      <div class="char-tick">✓</div>
+    <div class="char ${sel.has(i)?'on':''}" style="--c:${c.color}" role="button" tabindex="0"
+      aria-pressed="${sel.has(i)}" aria-label="${c.name}, ${c.role}" onclick="toggleChar(${i})"
+      onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleChar(${i})}">
+      <div class="char-tick" aria-hidden="true">✓</div>
       <div class="char-tok">${c.emoji}</div>
       <div class="char-name">${c.name}</div>
       <div class="char-role">${c.role}</div>
@@ -251,6 +265,8 @@ function renderChars(){
 function toggleChar(i){
   if(sel.has(i)) sel.delete(i); else { if(sel.size>=6) return; sel.add(i); }
   renderChars();
+  // re-render drops focus; restore it for keyboard users
+  const el=document.querySelectorAll('.char')[i]; if(el) el.focus({preventScroll:true});
 }
 renderChars();
 
@@ -350,7 +366,9 @@ function updateTurn(){
   const tw=document.getElementById('turnWho');
   tw.innerHTML=`<span class="turn-dot" style="--c:${c.color};background:${c.color}"></span>${c.emoji} ${c.name}`;
   renderScores(); renderTokens();
-  document.getElementById('rollBtn').disabled=false;
+  const rb=document.getElementById('rollBtn'); rb.disabled=false;
+  // if focus was stranded (e.g. on a button inside a closed modal), hand it to Roll
+  if(document.activeElement===document.body) rb.focus({preventScroll:true});
 }
 
 function renderScores(){
@@ -433,9 +451,11 @@ function applyEffect(idx,e,cb){
     let lead=0; players.forEach((p,i)=>{if(p.pos>players[lead].pos)lead=i;});
     if(lead!==idx){const tmp=pl.pos;pl.pos=players[lead].pos;players[lead].pos=tmp;
       log(`<b>${nm}</b> swaps places with <b>${CHARACTERS[players[lead].char].name}</b>!`);}
+    else log(`<b>${nm}</b> is already in the lead. The rumour falls flat.`);
   }
   if(e.cafe){const cafes=Object.keys(SPECIAL).filter(k=>SPECIAL[k]==='cafe').map(Number).filter(k=>k<pl.pos);
-    if(cafes.length){pl.pos=cafes[cafes.length-1];}}
+    if(cafes.length){pl.pos=cafes[cafes.length-1];log(`<b>${nm}</b> trudges back to the Cafe.`);}
+    else log(`<b>${nm}</b> hasn't even passed a Cafe yet. Nowhere to retreat to.`);}
   if(typeof e.mv==='number'){
     if(e.mv>0){renderTokens();return movePlayer(idx,e.mv,()=>{if(pl.pos>=LAST)return win(idx);finishEffect(idx,e,cb);});}
     else{pl.pos=Math.max(0,pl.pos+e.mv);}
@@ -447,7 +467,8 @@ function finishEffect(idx,e,cb){
   renderTokens(); renderScores();
   if(pl.pos>=LAST) return win(idx);
   if(e.skip) pl.skip=true;
-  if(e.again){ busy=false; document.getElementById('rollBtn').disabled=false;
+  if(e.again){ busy=false; const rb=document.getElementById('rollBtn'); rb.disabled=false;
+    if(document.activeElement===document.body) rb.focus({preventScroll:true});
     log(`<b>${CHARACTERS[pl.char].name}</b> rolls again!`); return; }
   cb();
 }
@@ -478,6 +499,7 @@ function showCard(card,cb){
   document.getElementById('cpText').textContent=card.t;
   document.getElementById('cpEff').innerHTML=effText(card.e);
   document.getElementById('cardModal').classList.add('open');
+  document.getElementById('cpBtn').focus({preventScroll:true});
 }
 function closeCard(){
   document.getElementById('cardModal').classList.remove('open');
@@ -493,6 +515,7 @@ function win(idx){
   document.getElementById('winScore').textContent=c.name+' wins';
   document.getElementById('winSub').innerHTML=`Most complaints lodged: <b>${CHARACTERS[champ.char].name}</b> (${champ.pts} pts)`;
   document.getElementById('winModal').classList.add('open');
+  document.getElementById('winBtn').focus({preventScroll:true});
   log(`🏁 <b>${c.name}</b> wins the climb!`);
 }
 

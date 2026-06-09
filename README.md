@@ -2,6 +2,8 @@
 
 > *A fine place to be unhappy — together.*
 
+**Version 1.0Delta**
+
 A charming, fully self-contained **pass-and-play electronic board game**. Margaret and the perpetually-dissatisfied residents of Complaint Village race up Complaint Mountain — rolling dice, drawing Complaint Cards, surviving the dreaded Roundabout, and lodging as many complaints as possible along the way.
 
 First to the summit wins. The biggest complainer is crowned **Chief Complainer of the Mountain**.
@@ -31,6 +33,7 @@ First to the summit wins. The biggest complainer is crowned **Chief Complainer o
 - Elegant dusk palette, *Fraunces* + *Inter* typography, smooth animations.
 - Fully **responsive** — plays on phone or desktop.
 - Local **pass-and-play** — no accounts, no server, no internet required after load.
+- **Accessible** — keyboard-playable character selection and dialogs, screen-reader-friendly game log, honours `prefers-reduced-motion`.
 
 ## 🛠️ Tech
 
